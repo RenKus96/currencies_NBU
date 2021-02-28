@@ -1,3 +1,3 @@
 # currencies_NBU
-Курсы валют Национального банка Украины
-Currency rates of the National Bank of Ukraine
+Получение курса валют Национального банка Украины.
+Obtaining the exchange rate of the National Bank of Ukraine.
