@@ -2,38 +2,28 @@
 import requests
 from datetime import datetime
 
+def in_log(s):
+    log_out = open('log.txt', "a+")
+    log_out.write('-----------------\n')
+    log_out.write('Дата обработки: {}\n'.format(datetime.now()))
+    log_out.write(s)
+    log_out.close()
 
 def getFromHTTP(fromHTTP):
     try:
         p = requests.get(fromHTTP)
-        if p.status_code == 200:
-#            out = open('result.json', "wb")
-#            out.write(p.content)
-#            out.close()
-#            return True
-            return True, p.json()
-        else:
-            if p.status_code == 404:
-                log_out = open(log_file, "a+")
-                log_out.write('-----------------\n')
-                log_out.write('Дата обработки: {}\n'.format(datetime.now()))
-                log_out.write("Страница с данными не найдена.\n")
-                log_out.close()
-                return False, None
-            else:
-                log_out = open(log_file, "a+")
-                log_out.write('-----------------\n')
-                log_out.write('Дата обработки: {}\n'.format(datetime.now()))
-                log_out.write("Нет доступа к данным --> код ответа {}\n".format(p.status_code))
-                log_out.close()
-                return False, None
     except requests.exceptions.RequestException as err:
-        log_out = open(log_file, "a+")
-        log_out.write('-----------------\n')
-        log_out.write('Дата обработки: {}\n'.format(datetime.now()))
-        log_out.write("Нет доступа к данным {} по причине --> {}\n".format(fromHTTP, err))
-        log_out.close()
+        in_log("Нет доступа к данным {} по причине --> {}\n".format(fromHTTP, err))
         return False, None
+    if p.status_code == 200:
+        return True, p.json()
+    else:
+        if p.status_code == 404:
+            in_log("Страница с данными не найдена.\n")
+            return False, None
+        else:
+            in_log("Нет доступа к данным --> код ответа {}\n".format(p.status_code))
+            return False, None
 
 def getdate():
     while True:
@@ -51,17 +41,14 @@ def getvalute():
         else:
             print('Неверный формат валюты.')
             
-        
-if __name__ == '__main__':
-    log_file = 'log.txt'
+def get_val():
     rate_date = getdate()
     val = getvalute()
 #    res, rate = getFromHTTP("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangenew?json&valcode={}&date={}".format(val,rate_date.strftime("%Y%m%d")))
-    resOk, rate = getFromHTTP("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangenew?json&date={}".format(rate_date.strftime("%Y%m%d")))
+    resOk, rate = getFromHTTP("https://bank.gov.ua/NBUStatService/v1/statdirectory/exchangenew?json")
     if resOk:
         out = open('currencies_NBU_{}.txt'.format(rate_date.strftime("%Y-%m-%d")), "w")
         out.write('Курси гривні до іноземної валюти станом на {}:\n'.format(rate_date.strftime("%d.%m.%Y")))
-    #    out.write('Курс гривны к иностранной валюте по состоянию на {}:\n'.format(rate_date.strftime("%d.%m.%Y")))
         find_val=False
         for valute in rate:
             out.write('{} ({}) to UAH: {}\n'.format(valute['txt'],valute['cc'],valute['rate']))
@@ -74,7 +61,11 @@ if __name__ == '__main__':
             print('Список курсов гривны к иностранной валюте вы можете посмотреть в файле currencies_NBU_{}.txt'.format(rate_date.strftime("%Y-%m-%d")))
         out.close()
     else:
-        print('Ошибка доступа к данным курса валют (см. файл log.txt)')
+        print('Ошибка доступа к данным курса валют (см. файл log.txt)')	
+        
+if __name__ == '__main__':
+	get_val()
+
     
     
 
